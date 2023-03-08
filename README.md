@@ -68,89 +68,89 @@ User can use model that takes (long) dead time into account. If that dead time i
 sim('Patient_PID_noDeadTime');
 %sim('Patient_PID');
 ```
-PID control *without* taking dead time into account:
+PID control **without** taking dead time into account:
 | ![](/docs/img/reg_bis_pid_noDeadTime.png) |
 |:--:| 
-| *PID without dead time.* |
+| PID without dead time. |
 
-PID control *with* taking dead time into account:
+PID control **with** taking dead time into account:
 | ![](/docs/img/reg_bis_pid.png) |
 |:--:| 
-| *PID with dead time.* |
+| PID with dead time. |
 
 ## Target Controled Infusion<a id='tci'></a>
 
-TCI with *exact* estimated parameters:
+TCI with **exact** estimated parameters:
 | ![](/docs/img/tci_exactParam_noDist.png) |
 |:--:| 
-| *TCI with exact parameters.* |
+| TCI with exact parameters. |
 
 
-TCI with *wrong* estimated parameters of PK model (10% range of system matrix). We can see bias:
+TCI with **wrong** estimated parameters of PK model (10% range of system matrix). We can see bias:
 | ![](/docs/img/tci_10pctParam_noDist.png) |
 |:--:| 
-| *TCI with wrong estimated parameters.* |
+| TCI with wrong estimated parameters. |
 
 ## Target Controled Infusion with PSO<a id='tci-pso'></a>
 
-TCI PSO with *exact* estimated parameters:
+TCI PSO with **exact** estimated parameters:
 | ![](/docs/img/tci_pso_exactParam_noDist.png) |
 |:--:| 
-| *TCI PSO with exact parameters.* |
+| TCI PSO with exact parameters. |
 
 
 ## Predictive Functional Controller<a id='pfc'></a>
 
-PFC with *exact* estimated parameters:
+PFC with **exact** estimated parameters:
 | ![](/docs/img/reg_bis_pfc.png) |
 |:--:| 
-| *PFC with exact parameters.* |
+| PFC with exact parameters. |
 
 
 ## Side-by-side PFC vs TCI comparison<a id='pfc-vs-tci'></a>
 
-PFC vs TCI comparison with *exact* estimated parameters:
+PFC vs TCI comparison with **exact** estimated parameters:
 | ![](/docs/img/PFC_vs_TCI_exactParam_noDist.png) |
 |:--:| 
-| *PFC vs TCI with exact parameters.* |
+| PFC vs TCI with exact parameters. |
 
-PFC vs TCI comparison with with *wrong* estimated parameters of PK model (20% range of system matrix):
+PFC vs TCI comparison with with **wrong** estimated parameters of PK model (20% range of system matrix):
 | ![](/docs/img/PFC_vs_TCI_20pctParam_noDist.png) |
 |:--:| 
-| *PFC vs TCI with wrong estimated parameters.* |
+| PFC vs TCI with wrong estimated parameters. |
 
 ## PFC analysis<a id='pfc-pd-analysis'></a>
 
 Sensitivity of parameter $\sigma$ analysis:
 | ![](/docs/img/PFC_pd_analysis_sigma.png) |
 |:--:| 
-| *Parameter $\sigma$ analysis.* |
+| Parameter $\sigma$ analysis. |
 
 Sensitivity of parameter $\gamma$ analysis:
 | ![](/docs/img/PFC_pd_analysis_gamma.png) |
 |:--:| 
-| *Parameter $\gamma$ analysis.* |
+| Parameter $\gamma$ analysis. |
 
 Sensitivity of parameter $T_d$ (dead time estimation) analysis:
 | ![](/docs/img/PFC_pd_analysis_mrtviCas.png) |
 |:--:| 
-| *Parameter $T_d$ analysis.* |
+| Parameter $T_d$ analysis. |
 
 Sensitivity of parameter $C_{50P}$ analysis:
 | ![](/docs/img/PFC_pd_analysis_c50p.png) |
 |:--:| 
-| *Parameter $C_{50P}$ analysis.* |
+| Parameter $C_{50P}$ analysis. |
 
 Sensitivity of parameter $C_{50R}$ analysis:
 | ![](/docs/img/PFC_pd_analysis_c50r.png) |
 |:--:| 
-| *Parameter $C_{50P}$ analysis.* |
+| Parameter $C_{50P}$ analysis. |
 
 ## PFC detailed analysis<a id='pfc-pd-detail-analysis'></a>
 
 In the simulations used to obtain the results presented above to analyse the impact of parameter misestimation, we have assumed that we know the exact parameters of the PK models. However, if we do not know them precisely, the final results may of course differ. In the case that we misestimate the parameters of the PK model in the range of 20\% and we also misestimate the parameters of the PD model, the simulation results can be seen:
 | ![](/docs/img/PFC_pk_pd_analysis.png) |
 |:--:| 
-| *Parameter $C_{50P}$ analysis.* |
+| PFC detailed analysis. |
 
 
