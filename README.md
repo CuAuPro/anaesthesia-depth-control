@@ -22,6 +22,16 @@ Matlab scripts with Simulink models can be used to test different methods of con
 
 # Associated files
 
+## Requirements
+
+
+[Open Source Patient Simulator](https://www.mathworks.com/matlabcentral/fileexchange/85208-open-source-patient-simulator) should be installed from MATLAB Central File Exchange and added to PATH.
+
+| ![](/docs/img/simulator_concept.png) |
+|:--:| 
+| Patient Simulator concept – Clara Mihaela Ionescu (2023). [Open Source Patient Simulator](https://www.mathworks.com/matlabcentral/fileexchange/85208-open-source-patient-simulator), MATLAB Central File Exchange. |
+
+
 ## Matlab scripts
 
 *The parameters of the controllers or models can be varied in scripts at predefined places to get different results*
