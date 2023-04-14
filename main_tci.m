@@ -165,7 +165,8 @@ g22 = ((K22)/(1+tau22*s))*(1)/(1+T22*s+(T22*s)^2/2+(T22*s)^3/6 + (T22*s)^4/24);
 % change one input at a time
 Tsim=1200;
 Tinject = 10;
-
+C50P_est = C50P;
+C50R_est = C50R;
 
 CER_REF = 0;
 inputForRemi = CER_REF./dcgain(remiSS)*60;
@@ -193,7 +194,8 @@ CEP_REF = BIStoContentration(BIS_REF, Uremi, gammaBIS, sigmaBIS, Emax).*C50P
 %rand_min = -0.1;
 %rand_max = 0.1;
 %Q_rand = rand_min + (rand_max - rand_min).*rand(size(propSS.A));
-
+Q_rand = [];
+% Uncomment if want to simulate wrong estimation of model parameters
 %load Q_rand_10pct.mat
 %%
 %if ~(exist('Q_rand'))

@@ -142,14 +142,8 @@ g22 = ((K22)/(1+tau22*s))*(1)/(1+T22*s+(T22*s)^2/2+(T22*s)^3/6 + (T22*s)^4/24);
 % change one input at a time
 Tsim=1200;
 Tinject = 10;
-C50P_est = C50P;
-C50R_est = C50R;
-CER_REF = 0;
-inputForRemi = CER_REF./dcgain(remiSS)*60;
-
-% Input vectors for Propofol, Remifentanil, Atracurium,...
 inputStepP=[zeros(1,Tinject) 2*ones(1,Tsim-Tinject)]; %% 
-inputStepR=[zeros(1,Tinject) inputForRemi*ones(1,Tsim-Tinject)]; %% 
+inputStepR=[zeros(1,Tinject) 0*ones(1,Tsim-Tinject)]; %% 
 inputStepA=[zeros(1,Tinject) 0*ones(1,Tsim-Tinject)]; %% 
 inputStepD=[zeros(1,Tinject) 0*ones(1,Tsim-Tinject)]; %% 
 inputStepS=[zeros(1,Tinject) 0*ones(1,Tsim-Tinject)]; %% 
@@ -165,15 +159,15 @@ anestS=timeseries(anestS); ao=timeseries(ao);
 %% References
 
 BIS_REF = 50;
-CEP_REF = 4.16;
+CE_REF = 4.16;
+
 %% Matlab-Simulink Exchange Variables
 
-% Hill inverse, parameters for use in Simulink internal models
+% Hill inverse
 sigma = sigmaBIS;
 gamma = gammaBIS;
+%%%%%%%%%%%%%%%%%
 
-
-% Propofol PK model for internal use in Simulink Model Reference Control
 model_prop = {};
 propSSdiscrete = c2d(propSS, Ts);
 model_prop.A = propSSdiscrete.A;
@@ -187,7 +181,6 @@ model_prop.D = propSSdiscrete.D;
 %     model_prop.D, ...
 %     Ts);
 
-% Remifentanil PK model for internal use in Simulink Model Reference Control
 model_remi = {};
 remiSSdiscrete = c2d(remiSS, Ts);
 model_remi.A = remiSSdiscrete.A;
@@ -195,129 +188,137 @@ model_remi.B = remiSSdiscrete.B;
 model_remi.C = remiSSdiscrete.C;
 model_remi.D = remiSSdiscrete.D;
 
-%% PSO
+%% TCI (https://link.springer.com/article/10.1007/BF01070999)
+Ts_TCI = 10; % 10s
+global k10 k12 k13 k14 k21 k31 k41
 
-%Ref model
-% propSS poles:
-% pole(propSS)
-% ans =
-%    -0.4560
-%    -0.8616
-%    -0.0566
-%    -0.0025
-% -1./pole(propSS)
-%    2.1930
-%    1.1606
-%   17.6637
-%  407.2016
+%Podatki iz clanka
+% k10 = 0.0827;
+% k12 = 0.471;
+% k13 = 0.225;
+% k21 = 0.102;
+% k31 = 0.006;
+% k41 = 0.147;
+% k14 = k41/10000;
 
-%Reference trajectory (first order)
-Ar = [0.945]; % Ar = exp(-Ts/Tm) exp(-1/(1/pole))
-Br = 1*(eye(size(Ar,1)) - Ar);
-Cr = eye(size(Ar,1));
-Dr = 0;
+%Marsh
+% k10 = 0.119;
+% k12 = 0.112;
+% k13 = 0.0419;
+% k21 = 0.055;
+% k31 = 0.0033;
+% k41 = 0.26;
+% k14 = ke41/10000;
 
-H = 10; % Prediction horizont
-model_cerefSS = ss(Ar,Br,Cr,Dr, Ts);
-dcgain(model_cerefSS)
+%Schnieder
+k10 = k10p/60;
+k12= k12p/60;
+k13 = k13p/60;
+k21 = k21p/60;
+k31 = k31p/60;
+k41 = ke0p/60;
+k14 = k41/10000;
 
-% Reference model for internal use in Simulink Model Reference Control
-model_ceref = {};
-model_ceref.A = model_cerefSS.A;
-model_ceref.B = model_cerefSS.B;
-model_ceref.C = model_cerefSS.C;
-model_ceref.D = model_cerefSS.D;
+
+
+% Ap = [-(k10p + k12p + k13p) k21p k31p 0; k12p -k21p 0 0; k13p 0 -k31p 0; k1ep 0 0 -ke0p];
+% Bp = [1;0;0;0];
+% Cp = [0 0 0 1];
+% Dp = 0;
+% propSS = ss(Ap,Bp,Cp,Dp);
 
 %%
-% Parametri
-PART_NUM = 50;
-max_nr_iter = 20;
-w = 1.0; %inertia coefficient
-w_damping = 0.99; % inertia damping coefficient
-c1 = 3; %social coefficient in own vector
-c2 = c1; %social coefficient in cluster
+% y1 = lsim(c2d(propSS,1/60), ones(1,100*60), 1:1/60:1+100-1/60)*60
+% y2 = lsim(propSS, ones(1,100*60), 1:100*60)
+% 
+% figure;
+% plot(y1);
+% figure;
+% plot(y2);
+%% Plotting t_peak...
+a1 = 0;a2 = 0;a3 = 0;a4 = 0;
+a4_prev = a4;
+jj = 1;
+%a4arr = [0 0];
+e_udf = [];
+Infusion = [];
+cond1 = true;
+t_peak = 0;
+while(1)
+    a4_prev = a4;
+    if jj < 11
+        da1 = a2*k21 + a3*k31 + a4*k41 - a1*(k10+k12+k13+k14) + 1; % infusion is running
+        I = 1;
+    else
+        da1 = a2*k21 + a3*k31 + a4*k41 - a1*(k10+k12+k13+k14);     % infusion is off
+        I = 0;
+    end
+    da2 = a1*k12 - a2*k21;
+    da3 = a1*k13 - a3*k31;
+    da4 = a1*k14 - a4*k41;
 
-X_max = 6;
-X_min = 0;
-V_max = (X_max-X_min)/5;
-uBest = 0;
-nr_inputs = length(uBest);
-
-H = 10; %Horizont
-
-%template
-empty_particle.Position = [];
-empty_particle.Velocity = [];
-empty_particle.Cost = [];
-empty_particle.Best.Position = [];
-empty_particle.Best.Cost = [];
-
-particle_init = repmat(empty_particle, PART_NUM, 1);
-
-GlobalBest_init.Cost = inf;
-GlobalBest_init.Position = 0;
-
-initGlobalBest = false;
-for i=1:PART_NUM
-
-    particle_init(i).Position = X_min + (X_max)*rand(1, nr_inputs);
-    particle_init(i).Velocity = zeros(nr_inputs,1);
-
-    particle_init(i).Cost = inf;
-    particle_init(i).Best.Position = particle_init(i).Position;
-    particle_init(i).Best.Cost = particle_init(i).Cost;
-
-    if particle_init(i).Best.Cost < GlobalBest_init.Cost
-        GlobalBest_init = particle_init(i).Best;
-        initGlobalBest = true;
+    a1 = a1 + da1;
+    a2 = a2 + da2;
+    a3 = a3 + da3;
+    a4 = a4 + da4;
+    e_udf = [e_udf; a4];
+    Infusion = [Infusion; I];
+    %a4arr = [a4arr; a4 a4_prev ];
+    
+    if (a4 < a4_prev) && cond1
+        t_peak = jj-1;
+        cond1 = false;
     end
 
+    if (jj > t_peak*2) && ~cond1
+        break;
+    end
+    jj = jj+1;
 end
-if ~initGlobalBest
-    GlobalBest_init = particle_init(i).Best;
-    GlobalBest_init.Position = X_min; %Safety...
-    initGlobalBest = true;
-end
-
-
-%%
-out = sim('Patient_TCI_PSO');
-%% Plotting
-
-
-CEP_REF_plot = CEP_REF*ones(length(out.time), 1);
-BIS_REF_plot = ContentrationToBIS(CEP_REF_plot./C50P, CER_REF./C50R, gammaBIS, sigmaBIS, Emax);
 
 figure;
-
-subplot(3,1,1);
-plot(out.time./60, BIS_REF_plot, 'k');
-title("TCI - PSO", 'Interpreter', 'latex');
-
-hold on;
-%plot(out.time./60, out.y_refModel, 'r');
-plot(out.time./60, out.BIS_combined, 'b');
-%legend('ref', 'ref\_m','y', 'Interpreter', 'latex');
-legend('ref','y', 'Interpreter', 'latex');
-xlabel("$t [min]$", 'Interpreter', 'latex');
-ylabel("$BIS [\%]$", 'Interpreter', 'latex');
-ylim([0,Emax*1.05]);
-
-subplot(3,1,2);
-plot(out.time./60, CEP_REF_plot, 'k');
-hold on;
-plot(out.time./60, out.y_refModel, 'r');
-plot(out.time./60, out.ce_est, 'b');
-legend('$ref$', '$ref_{model}$', '$x_{est}$', 'Interpreter', 'latex');
-xlabel("$t [min]$", 'Interpreter', 'latex');
+subplot(2,1,1);
+plot(Infusion);
+xlabel("$t [s]$", 'Interpreter', 'latex');
+ylabel("$I [mg/ml/s]$", 'Interpreter', 'latex');
+ylim([-0.05,max(Infusion)*1.05]);
+subplot(2,1,2);
+plot(e_udf*10000);
+%set(gca,'XTick',[0],'YTick',[0])
+xline(t_peak,'--','$t_{peak}$', 'Interpreter', 'latex');
+xlabel("$t [s]$", 'Interpreter', 'latex');
 ylabel("$x_e [mg/ml]$", 'Interpreter', 'latex');
-%ylim([0, max(xe_ref)*1.05]);
-ylim([0, max(out.ce_est)*1.05]);
 
-subplot(3,1,3);
-plot(out.time./60, out.u_reg_sat, 'b');
-xlabel("$t [min]$", 'Interpreter', 'latex');
-ylabel("$u_{Prop} [mg/ml/min]$", 'Interpreter', 'latex');
-ylim([-0.5, 6.5]);
+%% Real t_peak...
 
+a1 = 0;a2 = 0;a3 = 0;a4 = 0;
+a4_prev = a4;
+jj = 1;
+%a4arr = [0 0];
+e_udf = [];
+while(1)
+    a4_prev = a4;
+    if jj < 110
+        da1 = a2*k21 + a3*k31 + a4*k41 - a1*(k10+k12+k13+k14) + 1; % infusion is running
+    else
+        da1 = a2*k21 + a3*k31 + a4*k41 - a1*(k10+k12+k13+k14);     % infusion is off
+    end
+    da2 = a1*k12 - a2*k21;
+    da3 = a1*k13 - a3*k31;
+    da4 = a1*k14 - a4*k41;
+
+    a1 = a1 + da1;
+    a2 = a2 + da2;
+    a3 = a3 + da3;
+    a4 = a4 + da4;
+    e_udf = [e_udf; a4];
+    %a4arr = [a4arr; a4 a4_prev ];
+    
+    if a4 < a4_prev
+        break;
+        
+    end
+    jj = jj+1;
+end
+t_peak = jj-1
 

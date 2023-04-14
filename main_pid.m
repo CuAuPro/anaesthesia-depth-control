@@ -3,7 +3,6 @@
                                 % GHENT UNIVERSITY, BELGIUM, JANUARY 2021
 
 %when this program is used please cite the following: 
-
 % An Open Source Patient Simulator for Design and Evaluation of Computer  Based Multiple Drug Dosing Control for Anesthetic and Hemodynamic Variables
 % C. Ionescu, M. Neckebroek, Mi. Ghita and D. Copot
 % IEEE Access; 2021; doi 10.1109/ACCESS.2021.3049880  
