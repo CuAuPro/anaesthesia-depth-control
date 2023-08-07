@@ -9,7 +9,7 @@ The depth of anaesthesia is most commonly quantified by analysis of the electroe
 
 The goal of computer-assisted drug delivery is to reduce the anesthesiologist's workload, increase safety, and shorten the patient's postoperative recovery time by reducing the dosage of the drug used.
 
-The complete study (for the time being only in Slovenian) is also available as a pdf document.
+The complete study (in Slovenian and English) is also available as a pdf document.
 
 Matlab scripts with Simulink models can be used to test different methods of controlling the depth of anaesthesia:
 
